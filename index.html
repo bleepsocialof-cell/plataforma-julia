@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Plataforma Julia — IA, CRM e Atendimento</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --navy:#0a1a5c;--navy-deep:#071345;
+  --cyan:#16c5d4;--green:#3ee845;--magenta:#c026d3;--pink:#e84393;
+  --ink:#0f1830;--muted:#6b7280;--line:#e6e8f0;--bg:#f4f6fb;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;}
+
+/* ===== LOGIN ÚNICO ===== */
+#loginScreen{display:flex;min-height:100vh;align-items:center;justify-content:center;position:relative;overflow:hidden;background:
+  radial-gradient(circle at 15% 15%, rgba(232,67,147,.18), transparent 42%),
+  radial-gradient(circle at 85% 25%, rgba(22,197,212,.16), transparent 42%),
+  radial-gradient(circle at 75% 85%, rgba(62,232,69,.13), transparent 42%),
+  var(--navy);}
+.login-card{background:#fff;border-radius:22px;padding:42px 38px;width:400px;max-width:92vw;box-shadow:0 30px 90px rgba(0,0,0,.4);position:relative;z-index:2;}
+.brand{text-align:center;margin-bottom:4px;font-family:'Sora';font-weight:800;font-size:30px;letter-spacing:-.5px;}
+.brand .ju{color:var(--navy);} .brand .dot{color:var(--magenta);} .brand .lia{color:var(--pink);}
+.login-sub{text-align:center;color:var(--muted);font-size:12.5px;margin-bottom:8px;}
+.login-pills{display:flex;gap:6px;justify-content:center;margin-bottom:26px;}
+.login-pills span{font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;font-family:'Sora';}
+.pill-ia{background:rgba(232,67,147,.12);color:var(--pink);}
+.pill-crm{background:rgba(22,197,212,.13);color:#0ea5b5;}
+.pill-zap{background:rgba(62,232,69,.15);color:#22c52a;}
+.login-field{margin-bottom:16px;}
+.login-field label{display:block;font-size:12px;font-weight:600;margin-bottom:6px;}
+.login-field input{width:100%;padding:12px 14px;border:1.5px solid var(--line);border-radius:11px;font-size:14px;font-family:'Inter';outline:none;transition:border .15s;}
+.login-field input:focus{border-color:var(--magenta);}
+.login-btn{width:100%;padding:13px;border:none;border-radius:11px;background:linear-gradient(135deg,var(--navy),#13277e);color:#fff;font-size:14px;font-weight:700;font-family:'Sora';cursor:pointer;margin-top:6px;box-shadow:0 8px 22px rgba(10,26,92,.35);transition:transform .1s;}
+.login-btn:hover{transform:translateY(-1px);}
+.login-err{display:none;color:#dc2626;font-size:12px;text-align:center;margin-top:12px;}
+.login-foot{text-align:center;margin-top:22px;font-size:11px;color:#aab;}
+
+/* ===== APP (shell) ===== */
+#appScreen{display:none;width:100vw;height:100vh;flex-direction:column;overflow:hidden;}
+.shell-top{height:54px;flex-shrink:0;background:var(--navy-deep);display:flex;align-items:center;padding:0 18px;gap:16px;z-index:20;}
+.shell-brand{font-family:'Sora';font-weight:800;font-size:18px;letter-spacing:-.4px;color:#fff;display:flex;align-items:center;}
+.shell-brand .dot{color:var(--magenta);}
+/* seletor de módulo */
+.mod-switch{display:flex;gap:4px;background:rgba(255,255,255,.07);padding:4px;border-radius:11px;margin-left:8px;}
+.mod-btn{display:flex;align-items:center;gap:7px;padding:7px 14px;border-radius:8px;cursor:pointer;font-family:'Sora';font-weight:600;font-size:12.5px;color:rgba(255,255,255,.6);transition:all .14s;border:none;background:transparent;}
+.mod-btn:hover{color:#fff;background:rgba(255,255,255,.06);}
+.mod-btn.active{background:#fff;color:var(--navy);}
+.mod-btn .md{width:7px;height:7px;border-radius:50%;}
+.mod-ia .md{background:var(--pink);} .mod-crm .md{background:var(--cyan);} .mod-zap .md{background:var(--green);}
+.mod-btn.active.mod-ia{box-shadow:inset 0 -2px 0 var(--pink);}
+.mod-btn.active.mod-crm{box-shadow:inset 0 -2px 0 var(--cyan);}
+.mod-btn.active.mod-zap{box-shadow:inset 0 -2px 0 var(--green);}
+.shell-spacer{flex:1;}
+.shell-user{display:flex;align-items:center;gap:9px;color:#fff;cursor:pointer;}
+.shell-av{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,var(--pink),var(--navy));display:flex;align-items:center;justify-content:center;font-weight:700;font-family:'Sora';font-size:13px;}
+.shell-uname{font-size:12.5px;font-weight:700;line-height:1.1;}
+.shell-urole{font-size:10.5px;color:rgba(255,255,255,.5);}
+.shell-logout{background:rgba(255,255,255,.08);border:none;color:#fff;cursor:pointer;width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;}
+.shell-logout:hover{background:rgba(255,255,255,.16);}
+.shell-body{flex:1;position:relative;overflow:hidden;}
+.mod-frame{position:absolute;inset:0;width:100%;height:100%;border:none;display:none;background:var(--bg);}
+.mod-frame.show{display:block;}
+/* admin toggle de módulos (simulação até o Auth) */
+.admin-bar{position:absolute;bottom:14px;right:14px;z-index:30;background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 12px;box-shadow:0 10px 30px rgba(0,0,0,.12);font-size:11px;}
+.admin-bar .t{font-weight:700;font-family:'Sora';color:var(--muted);text-transform:uppercase;letter-spacing:.5px;font-size:9.5px;margin-bottom:7px;}
+.admin-bar label{display:flex;align-items:center;gap:6px;margin:3px 0;cursor:pointer;color:var(--ink);}
+.admin-bar.hidden{display:none;}
+</style>
+</head>
+<body>
+
+<!-- LOGIN ÚNICO -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="brand"><span class="ju">Ju</span><span class="dot">.</span><span class="lia">lia</span></div>
+    <div class="login-sub">Sua plataforma de vendas inteligente</div>
+    <div class="login-pills"><span class="pill-ia">IA</span><span class="pill-crm">CRM</span><span class="pill-zap">Atendimento</span></div>
+    <div class="login-field"><label>E-mail</label><input type="email" id="loginEmail" placeholder="seu@email.com"/></div>
+    <div class="login-field"><label>Senha</label><input type="password" id="loginPassword" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+    <button class="login-btn" onclick="doLogin()">Entrar</button>
+    <div class="login-err" id="loginErr">E-mail ou senha incorretos.</div>
+    <div class="login-foot">Um acesso para todos os seus módulos</div>
+  </div>
+</div>
+
+<!-- SHELL -->
+<div id="appScreen">
+  <div class="shell-top">
+    <div class="shell-brand"><span>Ju</span><span class="dot">.</span><span id="shellModName" style="color:#fff">lia</span></div>
+    <div class="mod-switch" id="modSwitch"></div>
+    <div class="shell-spacer"></div>
+    <div class="shell-user"><div class="shell-av" id="shellAv">J</div><div><div class="shell-uname" id="shellName">Jadson</div><div class="shell-urole" id="shellRole">Administrador</div></div></div>
+    <button class="shell-logout" onclick="doLogout()" title="Sair"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg></button>
+  </div>
+  <div class="shell-body" id="shellBody">
+    <iframe class="mod-frame" id="frame-ia"  data-src="painel-julia-modulo.html?embed=1"></iframe>
+    <iframe class="mod-frame" id="frame-crm" data-src="jucrm.html?embed=1"></iframe>
+    <iframe class="mod-frame" id="frame-zap" data-src="juzap.html?embed=1"></iframe>
+
+    <!-- Barra admin: liga/desliga módulos pra simular o que o cliente comprou (até o Auth real) -->
+    <div class="admin-bar" id="adminBar">
+      <div class="t">Simular plano do cliente</div>
+      <label><input type="checkbox" id="chk-ia" checked onchange="aplicarPlano()"> Julia (IA)</label>
+      <label><input type="checkbox" id="chk-crm" checked onchange="aplicarPlano()"> Ju.CRM</label>
+      <label><input type="checkbox" id="chk-zap" checked onchange="aplicarPlano()"> Ju.Zap</label>
+    </div>
+  </div>
+</div>
+
+<script>
+const LOGIN_EMAIL="bleepsocialof@gmail.com";
+const LOGIN_PASS="Sarah@2018";
+
+// Definição dos módulos
+const MODULOS={
+  ia:{nome:'lia',label:'Julia',cls:'mod-ia',frame:'frame-ia'},
+  crm:{nome:'.CRM',label:'Ju.CRM',cls:'mod-crm',frame:'frame-crm'},
+  zap:{nome:'.Zap',label:'Ju.Zap',cls:'mod-zap',frame:'frame-zap'}
+};
+// O que o cliente comprou (até o Auth, controlado pela barra admin)
+let plano={ia:true,crm:true,zap:true};
+let moduloAtivo='ia';
+
+function doLogin(){
+  const e=document.getElementById('loginEmail').value.trim();
+  const p=document.getElementById('loginPassword').value;
+  if(e===LOGIN_EMAIL&&p===LOGIN_PASS){
+    document.getElementById('loginErr').style.display='none';
+    try{localStorage.setItem('sessao_plataforma',JSON.stringify({em:Date.now()}));}catch(_){}
+    entrarNoApp();
+  }else{document.getElementById('loginErr').style.display='block';}
+}
+function entrarNoApp(){
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('appScreen').style.display='flex';
+  aplicarPlano();
+}
+function doLogout(){
+  try{localStorage.removeItem('sessao_plataforma');}catch(_){}
+  document.getElementById('appScreen').style.display='none';
+  document.getElementById('loginScreen').style.display='flex';
+}
+function checarSessao(){
+  try{const s=JSON.parse(localStorage.getItem('sessao_plataforma')||'null');
+    if(s&&s.em&&(Date.now()-s.em)<7*24*60*60*1000)entrarNoApp();
+  }catch(_){}
+}
+
+// Monta o seletor conforme o plano e ativa o primeiro módulo disponível
+function aplicarPlano(){
+  // lê os checkboxes (modo admin)
+  plano.ia=document.getElementById('chk-ia').checked;
+  plano.crm=document.getElementById('chk-crm').checked;
+  plano.zap=document.getElementById('chk-zap').checked;
+
+  const ativos=Object.keys(MODULOS).filter(k=>plano[k]);
+  const sw=document.getElementById('modSwitch');
+
+  // o seletor só aparece quando há 2+ módulos
+  if(ativos.length>=2){
+    sw.style.display='flex';
+    sw.innerHTML=ativos.map(k=>`<button class="mod-btn ${MODULOS[k].cls} ${k===moduloAtivo?'active':''}" onclick="trocarModulo('${k}')"><span class="md"></span>${MODULOS[k].label}</button>`).join('');
+  }else{
+    sw.style.display='none';
+    sw.innerHTML='';
+  }
+
+  // se o módulo ativo não está mais no plano, vai pro primeiro disponível
+  if(!plano[moduloAtivo]||ativos.length===0){
+    moduloAtivo=ativos[0]||'ia';
+  }
+  if(ativos.length>0) trocarModulo(moduloAtivo);
+}
+
+function trocarModulo(k){
+  if(!plano[k])return;
+  moduloAtivo=k;
+  // carrega o iframe sob demanda (só na 1ª vez)
+  Object.keys(MODULOS).forEach(m=>{
+    const fr=document.getElementById(MODULOS[m].frame);
+    if(m===k){
+      if(!fr.src){fr.src=fr.getAttribute('data-src');}
+      fr.classList.add('show');
+    }else{
+      fr.classList.remove('show');
+    }
+  });
+  // atualiza nome no topo e destaque no seletor
+  document.getElementById('shellModName').textContent=MODULOS[k].nome;
+  document.querySelectorAll('.mod-btn').forEach(b=>b.classList.remove('active'));
+  const btn=document.querySelector('.mod-switch .'+MODULOS[k].cls);
+  if(btn)btn.classList.add('active');
+}
+
+window.addEventListener('DOMContentLoaded',checarSessao);
+</script>
+</body>
+</html>
